@@ -1,0 +1,8 @@
+pandas
+numpy
+matplotlib
+seaborn
+scipy
+streamlit
+python-dotenv # Good practice for env variables if needed
+# Add openpyxl if you expect .xlsx files, otherwise not needed for CSV
