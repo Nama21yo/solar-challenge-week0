@@ -94,46 +94,40 @@ if not daytime_df_for_plots.empty:
     available_metrics = [m for m in metrics_for_summary if m in daytime_df_for_plots.columns]
 
     if available_metrics:
-        summary_table = daytime_df_for_plots.groupby('Country')[available_metrics].agg(
-            Mean=('mean'),
-            Median=('median'),
-            Std_Dev=('std')
-        ).reset_index()
+        # Create a dictionary for the aggregation functions
+        agg_dict = {metric: ['mean', 'median', 'std'] for metric in available_metrics}
         
-        # For multi-index columns that agg creates (e.g., ('GHI', 'Mean'))
-        # We need to flatten them if they are multi-level
-        if isinstance(summary_table.columns, pd.MultiIndex):
-             summary_table.columns = ['_'.join(col).strip('_') if isinstance(col, tuple) else col for col in summary_table.columns.values]
-
-
-        st.markdown("Mean, Median, and Standard Deviation of key metrics during daytime (GHI > 10 W/m²).")
+        summary_table_multi_index = daytime_df_for_plots.groupby('Country').agg(agg_dict)
         
-        # Select a primary metric for sorting, e.g., GHI Mean
-        sort_metric = 'GHI_Mean' # Default, ensure this column name is correct after agg
-        if 'GHI' in available_metrics and 'Mean' in summary_table.columns.get_level_values(1) : # Check if GHI_Mean exists
-             pass # sort_metric is fine
-        elif available_metrics : # If GHI_Mean doesn't exist, pick first available metric's mean
-            first_metric_mean = f"{available_metrics[0]}_Mean"
-            if first_metric_mean in summary_table.columns:
-                sort_metric = first_metric_mean
-            else: # Fallback if naming is different
-                st.dataframe(summary_table.style.format("{:.2f}")) # Display unsorted
-                sort_metric = None # Cannot sort
+        if not summary_table_multi_index.empty:
+            # Flatten the MultiIndex columns
+            summary_table = summary_table_multi_index.copy()  # Avoid modifying original
+            summary_table.columns = ['_'.join(col).strip() for col in summary_table.columns.values]
+            summary_table = summary_table.reset_index()  # Bring 'Country' back as a column
+
+            st.markdown("Mean, Median, and Standard Deviation of key metrics during daytime (GHI > 10 W/m²).")
+            
+            # Ensure numeric formatting only applies to numeric columns
+            numeric_columns = summary_table.select_dtypes(include=['float', 'int']).columns
+            formatted_table = summary_table.copy()
+            for col in numeric_columns:
+                formatted_table[col] = formatted_table[col].apply(lambda x: f"{x:.2f}")
+            
+            sort_metric = 'GHI_mean'  # This will be the column name after flattening
+            
+            if sort_metric in summary_table.columns:
+                st.dataframe(formatted_table.sort_values(by=sort_metric, ascending=False))
+            elif not summary_table.empty:  # If GHI_mean not there, but table exists, show unsorted
+                st.dataframe(formatted_table)
+            else:
+                st.write("Summary table could not be generated or is empty after aggregation.")
         else:
-            sort_metric = None
-
-        if sort_metric and sort_metric in summary_table.columns:
-            st.dataframe(summary_table.sort_values(by=sort_metric, ascending=False).style.format("{:.2f}"))
-        elif sort_metric is None and not summary_table.empty : # If sort_metric was set to None and table isn't empty
-             pass # Already displayed unsorted
-        elif summary_table.empty:
-             st.write("Summary table could not be generated with available metrics.")
+            st.write("Aggregation resulted in an empty table.")
              
     else:
         st.write("No suitable metrics available for the summary table in selected data.")
 else:
     st.write("No daytime data available to generate the top regions summary table.")
-
 
 # --- Section 3: Time Series Viewer (Optional Advanced Feature) ---
 st.header("🕰️ Time Series Viewer")
