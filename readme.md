@@ -73,6 +73,27 @@ The project follows a structured analytical workflow:
     *   A Streamlit application (`app/main.py`) will be developed on a `dashboard-dev` branch.
     *   The dashboard will visualize key insights from the EDA and cross-country comparison, allowing for interactive exploration (e.g., country selection, metric plotting).
     *   The aim is to deploy this dashboard to Streamlit Community Cloud.
+    
+## Interactive Dashboard
+
+An interactive dashboard has been developed using Streamlit to visualize the key findings from this analysis.
+
+*   **Access:** [Link to Deployed Dashboard on Streamlit Community Cloud - if deployed]
+*   **Local Execution:**
+    1.  Ensure all dependencies in `requirements.txt` are installed.
+    2.  Make sure the cleaned CSV files (`benin-malanville_clean.csv`, `sierraleone-bumbuna_clean.csv`, `togo-dapaong_qc_clean.csv`) are present in a `data/` directory at the project root.
+    3.  Run the following command from the project root directory:
+        ```bash
+        streamlit run app/main.py
+        ```
+*   **Features:**
+    *   Selection of one or more countries for comparison.
+    *   Interactive boxplots for GHI, DNI (and other metrics).
+    *   Summary table ranking regions by key performance indicators.
+    *   Time series viewer for selected metrics.
+*   **Screenshot:**
+![Image](https://github.com/user-attachments/assets/7fd1ac35-d886-42ea-b4df-41831bc87a7f)
+
 
 ## Key Performance Indicators (KPIs) Addressed:
 
